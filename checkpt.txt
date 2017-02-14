@@ -1,0 +1,1 @@
+python model.py --epochs 500 --batch_size 512 --sample_size 10 --corr_angle 0.27 --save_interval=25

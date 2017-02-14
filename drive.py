@@ -1,7 +1,7 @@
 import argparse
 import base64
 import json
-
+import cv2
 import numpy as np
 import socketio
 import eventlet
@@ -11,7 +11,7 @@ from PIL import Image
 from PIL import ImageOps
 from flask import Flask, render_template
 from io import BytesIO
-
+from imageFunctions import resizing
 from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
 
@@ -36,7 +36,16 @@ def telemetry(sid, data):
     # The current image from the center camera of the car
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
+    #resize_image = resizing(image)
+    #resize_image = ImageOps.fit(image,(200,66),method=Image.LANCZOS)
     image_array = np.asarray(image)
+    #img_yuv = cv2.cvtColor(image_array, cv2.COLOR_RGB2YUV)
+    #img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
+    #hist_image = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2RGB)
+    #height,width = image_array.shape[:2]
+    #crop_image = image_array[65:height-25,:,:]
+    #resize_image = cv2.resize(crop_image,dsize=(200,66),interpolation= cv2.INTER_AREA)
+    #resize_image = resizing(hist_image)
     transformed_image_array = image_array[None, :, :, :]
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
@@ -71,8 +80,8 @@ if __name__ == '__main__':
         #   model = model_from_json(json.loads(jfile.read()))\
         #
         # instead.
-        model = model_from_json(jfile.read())
-
+        #model = model_from_json(jfile.read())
+        model = model_from_json(json.loads(jfile.read()))
 
     model.compile("adam", "mse")
     weights_file = args.model.replace('json', 'h5')
