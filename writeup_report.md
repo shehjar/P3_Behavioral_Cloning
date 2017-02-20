@@ -33,34 +33,34 @@ The goals / steps of this project are the following:
 ####1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
-* model.py containing the script to create and train the model
-* drive.py for driving the car in autonomous mode
-* model.h5 containing a trained convolution neural network 
-* writeup_report.md or writeup_report.pdf summarizing the results
+* model.py containing the script to create and train the model.
+* drive.py for driving the car in autonomous mode.
+* model.h5 containing a trained convolution neural network. This file has a higher size than 100 MB and therefore can be downloaded from [here](https://drive.google.com/open?id=0B41pqIfTqFFobDNkTGJZS2pRcDA)
+* writeup_report.md  for summarizing the results
 
-####2. Submssion includes functional code
-Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
+####2. Submission includes functional code
+Using the Udacity provided [simulator](https://d17h27t6h515a5.cloudfront.net/topher/2017/February/58983318_beta-simulator-windows/beta-simulator-windows.zip) and my drive.py file, the car can be driven autonomously around the track by executing
 ```sh
 python drive.py Model_Save/model.h5
 ```
 After opening the simulator, the file `drive.py` connects to the simulator platform and provides the ability for the car to drive autonomously.
-####3. Submssion code is usable and readable
+####3. Submission code is usable and readable
 
-The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works.
+The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works. This file uses some predefined helper functions for image processing and defining the neural network architecture.
 
 ###Model Architecture and Training Strategy
 
-####1. An appropriate model arcthiecture has been employed
+####1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+The neural network architecture implemented is the recently famous NVidia architecture consisting of convolutional network of 5x5 and 3x3 filter sizes and their respective depths of 24, 36 48 and 64 (keras_model.py lines 28-39). The model includes dense layers of depth 1164,100,50,10 and 1, with the last one being the normalized output steering angle.
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+The model includes ELU layers instead of the standard RELU, to introduce nonlinearity (code line 20). This was chosen because of the continuous nature of the derivative of ELU activation function near 0. This being a continuous regression problem, such type of activation function was better suited here. The input data as pixels is normalized in the model using a Keras lambda layer (code line 18) and also cropped using a Cropping2D function from keras.layers module.
 
 ####2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
+The initial attempts to reduce overfitting were done be using dropouts and L2 regularizers. However, balancing the training data by removing the ~0 degree turn images, flipping and augmenting the rest of the images led to a more robust training scheme and eventually, the neural network was able to capture the image details effectively without the use of dropouts and regularizers.
 
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
 ####3. Model parameter tuning
 
@@ -68,9 +68,9 @@ The model used an adam optimizer, so the learning rate was not tuned manually (m
 
 ####4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
+Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ...
 
-For details about how I created the training data, see the next section. 
+For details about how I created the training data, see the next section.
 
 ###Model Architecture and Training Strategy
 
@@ -80,11 +80,11 @@ The overall strategy for deriving a model architecture was to ...
 
 My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting.
 
 To combat the overfitting, I modified the model so that ...
 
-Then I ... 
+Then I ...
 
 The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
 
@@ -122,6 +122,6 @@ Etc ....
 After the collection process, I had X number of data points. I then preprocessed this data by ...
 
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+I finally randomly shuffled the data set and put Y% of the data into a validation set.
 
 I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
