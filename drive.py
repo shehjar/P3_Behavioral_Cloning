@@ -39,14 +39,14 @@ def telemetry(sid, data):
     #resize_image = resizing(image)
     #resize_image = ImageOps.fit(image,(200,66),method=Image.LANCZOS)
     image_array = np.asarray(image)
-    #img_yuv = cv2.cvtColor(image_array, cv2.COLOR_RGB2YUV)
+    img_hls = cv2.cvtColor(image_array, cv2.COLOR_RGB2HLS)
     #img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
     #hist_image = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2RGB)
     #height,width = image_array.shape[:2]
     #crop_image = image_array[65:height-25,:,:]
     #resize_image = cv2.resize(crop_image,dsize=(200,66),interpolation= cv2.INTER_AREA)
     #resize_image = resizing(hist_image)
-    transformed_image_array = image_array[None, :, :, :]
+    transformed_image_array = img_hls[None, :, :, :]
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     # The driving model currently just outputs a constant throttle. Feel free to edit this.

@@ -15,18 +15,23 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from keras_model import NVidia_Model
 from keras.callbacks import ModelCheckpoint, EarlyStopping
-from imageFunctions import resizing, translation_augmentation, brightness_augmentation, shadow_augmentation
+from imageFunctions import translation_augmentation, brightness_augmentation, shadow_augmentation
 
 # Flags for automated procedure
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 # Command line flags
-flags.DEFINE_integer('epochs', 100, "The number of epochs.")
+#flags.DEFINE_integer('epochs', 50, "The number of epochs.")
+#flags.DEFINE_integer('batch_size', 64, "The batch size for training data.")
+#flags.DEFINE_integer('sample_size', 19200, "The total number of training samples")
+#flags.DEFINE_float('corr_angle', 0.35, "The correction angle for left and right camera images")
+#flags.DEFINE_integer('save_interval', 2, "The interval between two saved files.")
+flags.DEFINE_integer('epochs', 50, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 64, "The batch size for training data.")
-flags.DEFINE_integer('sample_size', 20352, "The total number of training samples")
+flags.DEFINE_integer('sample_size', 19200, "The total number of training samples")
 flags.DEFINE_float('corr_angle', 0.35, "The correction angle for left and right camera images")
-flags.DEFINE_integer('save_interval', 5, "The interval between two saved files.")
+flags.DEFINE_integer('save_interval', 2, "The interval between two saved files.")
 
 # Define paths for getting data 
 CurFolder = os.getcwd()
@@ -76,13 +81,15 @@ def preprocessing_training(imagePath, angle):
     image = cv2.imread(img)
     L_image = cv2.imread(L_img)
     R_image = cv2.imread(R_img)
-
+    
     br_flag = np.random.randint(2)
 
     image,angle = translation_augmentation(image,angle)
     L_image, L_angle = translation_augmentation(L_image, L_angle)
     R_image, R_angle = translation_augmentation(R_image, R_angle)
-
+    angle = max(min(angle,1),-1)
+    L_angle = max(min(L_angle,1),-1)
+    R_angle = max(min(R_angle,1),-1)
     if br_flag:
         image = brightness_augmentation(image)
         L_image = brightness_augmentation(L_image)
@@ -91,25 +98,28 @@ def preprocessing_training(imagePath, angle):
         image = shadow_augmentation(image)
         L_image = shadow_augmentation(L_image)
         R_image = shadow_augmentation(R_image)
-    #if flip_flag:
+    
+    image = cv2.cvtColor(image,cv2.COLOR_BGR2HLS)
+    L_image = cv2.cvtColor(L_image, cv2.COLOR_BGR2HLS)
+    R_image = cv2.cvtColor(R_image, cv2.COLOR_BGR2HLS)
     flip_image = cv2.flip(image,1)
     flip_angle = -1*angle
     flip_L_image = cv2.flip(L_image,1)
     flip_L_angle = -1*L_angle
     flip_R_image = cv2.flip(R_image,1)
     flip_R_angle = -1*R_angle
-    
+    #print(image.shape)
+    #print(L_image.shape)
+    #print(R_image.shape)
     return [image, flip_image, L_image, flip_L_image, R_image, flip_R_image],[angle,
            flip_angle,L_angle,flip_L_angle,R_angle,flip_R_angle]
-    #return [resizing(image), resizing(flip_image), resizing(L_image), 
-    #        resizing(flip_L_image), resizing(R_image), resizing(flip_R_image)],[angle,
-    #                flip_angle,L_angle,flip_L_angle, R_angle, flip_R_angle]
 
 def preprocessing_testing(imagePaths):
     n_images = len(imagePaths)
     images=[]
     for i in range(n_images):
         image = cv2.imread(imagePaths[i][0])
+        image = cv2.cvtColor(image,cv2.COLOR_BGR2HLS)
         images.append(image)
     return np.array(images)
 
@@ -136,12 +146,30 @@ def generator_train(X, y, batch_size=256):
 
 def exponential_prob (b,x):
     return np.exp(b*x)
-    
+
+def equalizing_data(X,y,percent = 0.1):
+    X_out = [X[i] for i in range(len(X)) if abs(y[i]) >= 0.01]
+    y_out = y[np.absolute(y) >= 0.01]
+    low_turn = y[np.absolute(y) < 0.01]
+    X_low_turn = [X[i] for i in range(len(X)) if abs(y[i]) < 0.01]
+    n_low_turn = len(low_turn)
+    n_turns = len(X_out)
+    pick_size = min(n_low_turn,int(percent*n_turns))
+    indices_picked = np.random.choice(n_low_turn,size=pick_size, replace=False)
+    y_out.resize(n_turns + pick_size)
+    for ind, val in enumerate(indices_picked):
+        y_out[n_turns + ind] = low_turn[val]
+        X_out.append(X_low_turn[val])
+    return X_out, y_out
+
 def main(_):
     X,y = GetData(csvFile)
     X,y = shuffle(X,y)
-    train_X, valid_X, train_y, valid_y = train_test_split(X,y,train_size=0.9)
+    train_X, valid_X, train_y, valid_y = train_test_split(X,y,train_size=0.95)
     #train_X, train_y = X,y
+    #train_X = [train_X[i] for i in range(len(train_X)) if abs(train_y[i]) >= 0.01]
+    #train_y = train_y[np.absolute(train_y) >= 0.01]
+    train_X,train_y = equalizing_data(train_X,train_y, percent = 0)
     batch_size = FLAGS.batch_size
     valid_X = preprocessing_testing(valid_X)
     dir_save = saving_file(CurFolder)
