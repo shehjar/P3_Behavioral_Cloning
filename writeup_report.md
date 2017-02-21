@@ -35,13 +35,13 @@ The goals / steps of this project are the following:
 My project includes the following files:
 * model.py containing the script to create and train the model.
 * drive.py for driving the car in autonomous mode.
-* model.h5 containing a trained convolution neural network. This file has a higher size than 100 MB and therefore can be downloaded from [here](https://drive.google.com/open?id=0B41pqIfTqFFobDNkTGJZS2pRcDA)
+* model.h5 containing a trained convolution neural network. This file has a higher size than 100 MB and therefore can be downloaded [here](https://drive.google.com/open?id=0B41pqIfTqFFobDNkTGJZS2pRcDA)
 * writeup_report.md  for summarizing the results
 
 ####2. Submission includes functional code
 Using the Udacity provided [simulator](https://d17h27t6h515a5.cloudfront.net/topher/2017/February/58983318_beta-simulator-windows/beta-simulator-windows.zip) and my drive.py file, the car can be driven autonomously around the track by executing
 ```sh
-python drive.py Model_Save/model.h5
+python drive.py model.json
 ```
 After opening the simulator, the file `drive.py` connects to the simulator platform and provides the ability for the car to drive autonomously.
 ####3. Submission code is usable and readable
@@ -64,11 +64,11 @@ The model was tested by running it through the simulator and ensuring that the v
 
 ####3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25). The learning rate was however initialized as 0.001
 
 ####4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ...
+The training data included a skewed ratio of more than half of the training samples as close to 0 angle steering. The data was balanced by removing the images and their corresponding steering angles which fell between -0.01 and 0.01. Later during fit generator, the left, right and center images and their flipped images were given as an input to the neural network model.
 
 For details about how I created the training data, see the next section.
 
@@ -76,27 +76,78 @@ For details about how I created the training data, see the next section.
 
 ####1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
+The overall strategy for deriving a model architecture was for the neural network to grasp the minute details of the road that represented road curvature, so that it could be applied to any other terrain.
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+My first step was to use a convolution neural network model similar to the NVidia architecture, since they used the left and the right camera images for training their model and I thought this model might be appropriate because it was deep and with two different sets of filters, it was faster at evaluating high dimensional pixel data without using maxpooling techniques.
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting.
+In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. On most occasions, the validation loss was less than training loss. The decrease in value of the loss was proportional on both the datasets at each epoch. On the best working model configuration both the losses stagnated into a semi-constant value.
 
-To combat the overfitting, I modified the model so that ...
+However to observe overfitting, one really had to run the simulator and see the result. Initially it was difficult to ascertain which condition implied what result. An extremely hard turn on a straight road might be a result of overfitting and missing a valid turn during the course of simulation might be a result of underfitting. In the initial stages of the development of the model, I had found myself in both the categories and I tried using dropouts and L2 regularizers, changed its parameters to stay between the case of over and under fitting.
 
-Then I ...
+Later, I reformed my training data to include only tangible turns such that the steering angle for an example training data should be greater than 0.01 or less than -0.01. The respective images were augmented in terms of translation, brightness and shadows and the classifier was fed with a more balanced dataset. Through this, I was able to avoid dropouts and regularizers as the model worked with a more varied dataset.
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
+The images color space was later changed to HLS color space and that greatly increased the model efficiency.
 
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road, although with some jittery motion on certain occasions.
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
+The final model architecture (keras_model.py) consisted of a convolution neural network with two 5x5 and 3x3 filter sizes
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
+Here is a snippet of the layers of the NVidia neural network architecture
+```
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+cropping2d_1 (Cropping2D)        (None, 103, 320, 3)   0           cropping2d_input_1[0][0]         
+____________________________________________________________________________________________________
+lambda_1 (Lambda)                (None, 103, 320, 3)   0           cropping2d_1[0][0]               
+____________________________________________________________________________________________________
+convolution2d_1 (Convolution2D)  (None, 50, 158, 24)   1824        lambda_1[0][0]                   
+____________________________________________________________________________________________________
+elu_1 (ELU)                      (None, 50, 158, 24)   0           convolution2d_1[0][0]            
+____________________________________________________________________________________________________
+convolution2d_2 (Convolution2D)  (None, 23, 77, 36)    21636       elu_1[0][0]                      
+____________________________________________________________________________________________________
+elu_2 (ELU)                      (None, 23, 77, 36)    0           convolution2d_2[0][0]            
+____________________________________________________________________________________________________
+convolution2d_3 (Convolution2D)  (None, 10, 37, 48)    43248       elu_2[0][0]                      
+____________________________________________________________________________________________________
+elu_3 (ELU)                      (None, 10, 37, 48)    0           convolution2d_3[0][0]            
+____________________________________________________________________________________________________
+convolution2d_4 (Convolution2D)  (None, 8, 35, 64)     27712       elu_3[0][0]                      
+____________________________________________________________________________________________________
+elu_4 (ELU)                      (None, 8, 35, 64)     0           convolution2d_4[0][0]            
+____________________________________________________________________________________________________
+convolution2d_5 (Convolution2D)  (None, 6, 33, 64)     36928       elu_4[0][0]                      
+____________________________________________________________________________________________________
+elu_5 (ELU)                      (None, 6, 33, 64)     0           convolution2d_5[0][0]            
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 12672)         0           elu_5[0][0]                      
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 1164)          14751372    flatten_1[0][0]                  
+____________________________________________________________________________________________________
+elu_6 (ELU)                      (None, 1164)          0           dense_1[0][0]                    
+____________________________________________________________________________________________________
+dense_2 (Dense)                  (None, 100)           116500      elu_6[0][0]                      
+____________________________________________________________________________________________________
+elu_7 (ELU)                      (None, 100)           0           dense_2[0][0]                    
+____________________________________________________________________________________________________
+dense_3 (Dense)                  (None, 50)            5050        elu_7[0][0]                      
+____________________________________________________________________________________________________
+elu_8 (ELU)                      (None, 50)            0           dense_3[0][0]                    
+____________________________________________________________________________________________________
+dense_4 (Dense)                  (None, 10)            510         elu_8[0][0]                      
+____________________________________________________________________________________________________
+elu_9 (ELU)                      (None, 10)            0           dense_4[0][0]                    
+____________________________________________________________________________________________________
+dense_5 (Dense)                  (None, 1)             11          elu_9[0][0]                      
+====================================================================================================
+Total params: 15,004,791
+Trainable params: 15,004,791
+Non-trainable params: 0
+____________________________________________________________________________________________________
+```
 
 ####3. Creation of the Training Set & Training Process
 
