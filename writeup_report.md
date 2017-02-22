@@ -15,10 +15,10 @@ The goals / steps of this project are the following:
 
 
 [//]: # (Image References)
-
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
+[image0]: .Examples/output_compilation.png "Augmented images"
+[image1]: ./Examples/Brightness_compilation.png "Brightness Augmentation"
+[image2]: ./Examples/shadow_compilation.png "Shadow Augmentation"
+[image3]: ./Examples/translation_compilation.png "Translation Augmentation"
 [image4]: ./examples/placeholder_small.png "Recovery Image"
 [image5]: ./examples/placeholder_small.png "Recovery Image"
 [image6]: ./examples/placeholder_small.png "Normal Image"
@@ -151,24 +151,17 @@ ________________________________________________________________________________
 
 ####3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+The training data provided by Udacity was used to train the model. The images were processed in such a way that there would be a unique augmented set of images that would be fed to the classifier. The core functions in python were written in the file [imageFunctions.py](imageFunctions.py).
 
+So if there was an image that was picked from the training data, the same image would go through the processing functions to generate a similar but unique set of images (6), which will be fed to the classifier later. An example of the set of images are shown below
+
+![alt text][image0]
+
+Here you can see that the set of images comprises of the center, left and right image and their flipped images. The augmentation techniques are applied to the individual images and some examples are shown below
+
+![alt text][image1]
 ![alt text][image2]
-
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
-
 ![alt text][image3]
-![alt text][image4]
-![alt text][image5]
-
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
 
 After the collection process, I had X number of data points. I then preprocessed this data by ...
 
