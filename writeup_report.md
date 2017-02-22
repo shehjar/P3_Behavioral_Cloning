@@ -15,7 +15,7 @@ The goals / steps of this project are the following:
 
 
 [//]: # (Image References)
-[image0]: .Examples/output_compilation.png "Augmented images"
+[image0]: ./Examples/output_compilation.png "Augmented images"
 [image1]: ./Examples/Brightness_compilation.png "Brightness Augmentation"
 [image2]: ./Examples/shadow_compilation.png "Shadow Augmentation"
 [image3]: ./Examples/translation_compilation.png "Translation Augmentation"
@@ -163,9 +163,8 @@ Here you can see that the set of images comprises of the center, left and right 
 ![alt text][image2]
 ![alt text][image3]
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+The angle of the image was modified under translation augmentation and the angle per pixel shift was assumed to be 0.004.
 
+After shuffling and augmenting images through the fit_generator module from Keras, the model was ready to be trained. The training took approximately 10 epochs with 19200 samples per epoch. A model was saved at every epoch and the last one turned out to be the best.
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set.
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+The model thus found did well on the flat track. But unfortunately didn't fare well on the challenge track. I will have to look further into this to make it run through the challenge track. Perhaps, refine my shadow or brightness augmentation parameters or maybe by getting more data.
