@@ -25,12 +25,12 @@ The goals / steps of this project are the following:
 [image7]: ./examples/placeholder_small.png "Flipped Image"
 
 ## Rubric Points
-###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
+### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
 
 ---
-###Files Submitted & Code Quality
+### Files Submitted & Code Quality
 
-####1. Submission includes all required files and can be used to run the simulator in autonomous mode
+#### 1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
 * model.py containing the script to create and train the model.
@@ -38,43 +38,43 @@ My project includes the following files:
 * model.h5 containing a trained convolution neural network. This file has a higher size than 100 MB and therefore can be downloaded [here](https://drive.google.com/open?id=0B41pqIfTqFFobDNkTGJZS2pRcDA)
 * writeup_report.md  for summarizing the results
 
-####2. Submission includes functional code
+#### 2. Submission includes functional code
 Using the Udacity provided [simulator](https://d17h27t6h515a5.cloudfront.net/topher/2017/February/58983318_beta-simulator-windows/beta-simulator-windows.zip) and my drive.py file, the car can be driven autonomously around the track by executing
 ```sh
 python drive.py model.json
 ```
 After opening the simulator, the file `drive.py` connects to the simulator platform and provides the ability for the car to drive autonomously.
-####3. Submission code is usable and readable
+#### 3. Submission code is usable and readable
 
 The model.py file contains the code for training and saving the convolution neural network. The file shows the pipeline I used for training and validating the model, and it contains comments to explain how the code works. This file uses some predefined helper functions for image processing and defining the neural network architecture.
 
-###Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
-####1. An appropriate model architecture has been employed
+#### 1. An appropriate model architecture has been employed
 
 The neural network architecture implemented is the recently famous NVidia architecture consisting of convolutional network of 5x5 and 3x3 filter sizes and their respective depths of 24, 36 48 and 64 (keras_model.py lines 28-39). The model includes dense layers of depth 1164,100,50,10 and 1, with the last one being the normalized output steering angle.
 
 The model includes ELU layers instead of the standard RELU, to introduce nonlinearity (code line 20). This was chosen because of the continuous nature of the derivative of ELU activation function near 0. This being a continuous regression problem, such type of activation function was better suited here. The input data as pixels is normalized in the model using a Keras lambda layer (code line 18) and also cropped using a Cropping2D function from keras.layers module.
 
-####2. Attempts to reduce overfitting in the model
+#### 2. Attempts to reduce overfitting in the model
 
 The initial attempts to reduce overfitting were done be using dropouts and L2 regularizers. However, balancing the training data by removing the ~0 degree turn images, flipping and augmenting the rest of the images led to a more robust training scheme and eventually, the neural network was able to capture the image details effectively without the use of dropouts and regularizers.
 
 The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
-####3. Model parameter tuning
+#### 3. Model parameter tuning
 
 The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25). The learning rate was however initialized as 0.001
 
-####4. Appropriate training data
+#### 4. Appropriate training data
 
 The training data included a skewed ratio of more than half of the training samples as close to 0 angle steering. The data was balanced by removing the images and their corresponding steering angles which fell between -0.01 and 0.01. Later during fit generator, the left, right and center images and their flipped images were given as an input to the neural network model.
 
 For details about how I created the training data, see the next section.
 
-###Model Architecture and Training Strategy
+### Model Architecture and Training Strategy
 
-####1. Solution Design Approach
+#### 1. Solution Design Approach
 
 The overall strategy for deriving a model architecture was for the neural network to grasp the minute details of the road that represented road curvature, so that it could be applied to any other terrain.
 
@@ -90,7 +90,7 @@ The images color space was later changed to HLS color space and that greatly inc
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road, although with some jittery motion on certain occasions.
 
-####2. Final Model Architecture
+#### 2. Final Model Architecture
 
 The final model architecture (keras_model.py) consisted of a convolution neural network with two 5x5 and 3x3 filter sizes
 
@@ -149,7 +149,7 @@ Non-trainable params: 0
 ____________________________________________________________________________________________________
 ```
 
-####3. Creation of the Training Set & Training Process
+#### 3. Creation of the Training Set & Training Process
 
 The training data provided by Udacity was used to train the model. The images were processed in such a way that there would be a unique augmented set of images that would be fed to the classifier. The core functions in python were written in the file [imageFunctions.py](imageFunctions.py).
 
